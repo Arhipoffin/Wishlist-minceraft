@@ -38,16 +38,53 @@ h2 {
 
 button {
   font-family: inherit;
-  background: #55aa55;
-  border: 3px solid #2b2b2b;
-  border-radius: 6px;
-  padding: 5px 10px;
+  background: linear-gradient(180deg, #4caf50, #2e7d32);
+  border: 3px solid #1b5e20;
+  border-radius: 8px;
+  padding: 8px 12px;
   cursor: pointer;
-  margin-top: 5px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #fff;
+  box-shadow: 0 3px 0 #1a1a1a;
+  transition: all 0.15s ease;
 }
 
 button:hover {
-  background: #66cc66;
+  background: linear-gradient(180deg, #66bb6a, #388e3c);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #1a1a1a;
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 #1a1a1a;
+}
+
+button:disabled {
+  background: linear-gradient(180deg, #d32f2f, #b71c1c);
+  color: #fff;
+  cursor: not-allowed;
+  border-color: #7f0000;
+  opacity: 0.8;
+}
+
+/* --- Адаптив для телефонов --- */
+@media (max-width: 600px) {
+  button {
+    font-size: 14px;
+    padding: 10px 16px;
+    border-width: 4px;
+  }
+
+  .gift-card {
+    width: 90%;
+    max-width: 300px;
+  }
+
+  .gift-list {
+    gap: 25px;
+  }
 }
 
 button:disabled {
