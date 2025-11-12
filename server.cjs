@@ -7,18 +7,23 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Админ-пароль (можно менять через переменные окружения)
+// Админ-пароль
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "minecraft123";
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Статические файлы (CSS, JS, картинки)
-app.use(express.static(path.join(__dirname, "public")));
+// ====== Определяем путь к папке public ======
+// Если Render запускает сервер из /src, а public лежит в корне, используем "../public"
+const publicPath = path.join(__dirname, "../public");
+console.log("Public folder path:", publicPath);
+
+// Статика
+app.use(express.static(publicPath));
 
 // Файл с подарками
-const giftsFile = path.join(__dirname, "gifts.json");
+const giftsFile = path.join(__dirname, "../gifts.json");
 
 // ========================
 // API
@@ -121,15 +126,15 @@ app.post("/api/reset", (req, res) => {
 });
 
 // ========================
-// Отдача страниц
+// HTML страницы
 // ========================
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
+  res.sendFile(path.join(publicPath, "index.html"));
 });
 
 app.get("/admin.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/admin.html"));
+  res.sendFile(path.join(publicPath, "admin.html"));
 });
 
 // ========================
