@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Painel do Administrador 🎮</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <h1>⚙️ Painel do Administrador</h1>
+
+    <div id="login-section">
+      <input type="password" id="admin-pass" placeholder="Senha" />
+      <button id="login-btn">Entrar</button>
+    </div>
+
+    <div id="admin-panel" style="display: none">
+      <h2>Adicionar novo presente</h2>
+      <input type="text" id="title" placeholder="Título" />
+      <input type="text" id="link" placeholder="Link do presente" />
+      <input type="text" id="image" placeholder="Link da imagem (opcional)" />
+      <button id="add-btn">Adicionar</button>
+      <button id="reset-btn">🗑️ Deletar todos</button>
+
+      <h2>Lista de presentes</h2>
+      <table id="admin-gifts">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Reservado por</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <script src="js/admin.js"></script>
+  </body>
+</html>
