@@ -1,59 +1,70 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const PASSWORD = "minecraft123"; // пароль для панели админа
 
-const giftsFile = path.join(__dirname, "gifts.json");
+// Админ-пароль (можно менять через переменные окружения)
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "minecraft123";
 
+// Middleware
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
+
+// Статические файлы (CSS, JS, картинки)
 app.use(express.static(path.join(__dirname, "public")));
 
-// 📂 Проверяем, есть ли gifts.json
-if (!fs.existsSync(giftsFile)) {
-  fs.writeFileSync(giftsFile, "[]");
-}
+// Файл с подарками
+const giftsFile = path.join(__dirname, "gifts.json");
 
-// 🧩 Читаем список подарков
+// ========================
+// API
+// ========================
+
+// Получить все подарки
 app.get("/api/gifts", (req, res) => {
-  const data = fs.readFileSync(giftsFile, "utf8");
-  res.json(JSON.parse(data));
+  let gifts = [];
+  if (fs.existsSync(giftsFile)) {
+    gifts = JSON.parse(fs.readFileSync(giftsFile));
+  }
+  res.json(gifts);
 });
 
-// 🎁 Добавить подарок (только админ)
-app.post("/api/add", (req, res) => {
+// Добавить подарок (только админ)
+app.post("/api/gifts", (req, res) => {
   const { title, link, image, password } = req.body;
-  if (password !== PASSWORD)
-    return res.status(403).json({ error: "Senha incorreta" });
+  if (password !== ADMIN_PASSWORD)
+    return res.status(401).send("Senha incorreta");
 
-  const gifts = JSON.parse(fs.readFileSync(giftsFile, "utf8"));
-  const newGift = {
-    id: Date.now(),
-    title,
-    link,
-    image: image || "",
-    reserved: false,
-    reservedBy: "",
-  };
-  gifts.push(newGift);
+  let gifts = [];
+  if (fs.existsSync(giftsFile)) {
+    gifts = JSON.parse(fs.readFileSync(giftsFile));
+  }
+
+  const id = Date.now();
+  gifts.push({ id, title, link, image, reserved: false, reservedBy: "" });
   fs.writeFileSync(giftsFile, JSON.stringify(gifts, null, 2));
-  res.json({ success: true, gift: newGift });
+  res.json({ success: true });
 });
 
-// 🧱 Резервировать подарок
+// Резервирование подарка
 app.post("/api/reserve/:id", (req, res) => {
   const { name } = req.body;
   const id = parseInt(req.params.id);
-  let gifts = JSON.parse(fs.readFileSync(giftsFile, "utf8"));
+
+  if (!name) return res.status(400).send("Nome é obrigatório");
+
+  let gifts = [];
+  if (fs.existsSync(giftsFile)) {
+    gifts = JSON.parse(fs.readFileSync(giftsFile));
+  }
 
   const gift = gifts.find((g) => g.id === id);
-  if (!gift) return res.status(404).json({ error: "Presente não encontrado" });
-  if (gift.reserved)
-    return res.status(400).json({ error: "Presente já reservado" });
+  if (!gift) return res.status(404).send("Presente não encontrado");
+  if (gift.reserved) return res.status(400).send("Presente já reservado");
 
   gift.reserved = true;
   gift.reservedBy = name;
@@ -61,17 +72,20 @@ app.post("/api/reserve/:id", (req, res) => {
   res.json({ success: true });
 });
 
-// 🔓 Отменить резерв (только админ)
+// Отмена резервирования (только админ)
 app.post("/api/unreserve/:id", (req, res) => {
   const { password } = req.body;
-  if (password !== PASSWORD)
-    return res.status(403).json({ error: "Senha incorreta" });
+  if (password !== ADMIN_PASSWORD)
+    return res.status(401).send("Senha incorreta");
 
   const id = parseInt(req.params.id);
-  let gifts = JSON.parse(fs.readFileSync(giftsFile, "utf8"));
+  let gifts = [];
+  if (fs.existsSync(giftsFile)) {
+    gifts = JSON.parse(fs.readFileSync(giftsFile));
+  }
 
   const gift = gifts.find((g) => g.id === id);
-  if (!gift) return res.status(404).json({ error: "Presente não encontrado" });
+  if (!gift) return res.status(404).send("Presente não encontrado");
 
   gift.reserved = false;
   gift.reservedBy = "";
@@ -79,31 +93,49 @@ app.post("/api/unreserve/:id", (req, res) => {
   res.json({ success: true });
 });
 
-// 🗑 Удалить подарок (только админ)
-app.delete("/api/delete/:id", (req, res) => {
+// Удалить подарок (только админ)
+app.post("/api/delete/:id", (req, res) => {
   const { password } = req.body;
-  if (password !== PASSWORD)
-    return res.status(403).json({ error: "Senha incorreta" });
+  if (password !== ADMIN_PASSWORD)
+    return res.status(401).send("Senha incorreta");
 
   const id = parseInt(req.params.id);
-  let gifts = JSON.parse(fs.readFileSync(giftsFile, "utf8"));
-  gifts = gifts.filter((g) => g.id !== id);
+  let gifts = [];
+  if (fs.existsSync(giftsFile)) {
+    gifts = JSON.parse(fs.readFileSync(giftsFile));
+  }
 
+  gifts = gifts.filter((g) => g.id !== id);
   fs.writeFileSync(giftsFile, JSON.stringify(gifts, null, 2));
   res.json({ success: true });
 });
 
-// 🧨 Удалить все подарки (только админ)
+// Сбросить все подарки (только админ)
 app.post("/api/reset", (req, res) => {
   const { password } = req.body;
-  if (password !== PASSWORD)
-    return res.status(403).json({ error: "Senha incorreta" });
+  if (password !== ADMIN_PASSWORD)
+    return res.status(401).send("Senha incorreta");
 
-  fs.writeFileSync(giftsFile, "[]");
+  fs.writeFileSync(giftsFile, JSON.stringify([], null, 2));
   res.json({ success: true });
 });
 
-// 🌍 Стартуем сервер
-app.listen(PORT, () =>
-  console.log(`Servidor rodando em http://localhost:${PORT}`)
-);
+// ========================
+// Отдача страниц
+// ========================
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
+app.get("/admin.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/admin.html"));
+});
+
+// ========================
+// Запуск сервера
+// ========================
+
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
+});
