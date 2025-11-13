@@ -116,8 +116,8 @@
     "title": "Drone Infantil Mirage",
     "link": "https://www.mercadolivre.com.br/drone-infantil-mirage-quadricoptero-que-faz-manobras-24ghz/p/MLB44188173?skipInApp=true",
     "image": "https://http2.mlstatic.com/D_NQ_NP_2X_999870-MLA96143933767_102025-F.webp",
-    "reserved": false,
-    "reservedBy": ""
+    "reserved": true,
+    "reservedBy": "Timur"
   },
   {
     "id": 1762994183501,
